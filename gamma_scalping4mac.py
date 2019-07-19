@@ -10,8 +10,8 @@ np.set_printoptions(precision=4,suppress=True,formatter={'float': '{: 0.4f}'.for
 url = 'http://hq.sinajs.cn/list=CON_OP_10001902,CON_SO_10001902,sh510050'
 k = PyKeyboard()
 #持仓量，持仓价
-ETF50_VOLUME = 43.82
-ETF50_AVG = 2.949
+ETF50_VOLUME = 44.17
+ETF50_AVG = 2.948
 OP_VOLUME = 47
 OP_AVG = 0.3632
 UNIT = 0.35
@@ -86,7 +86,7 @@ def switch_to_sell():
 if __name__ == '__main__':
     opt = Option(positionVolume=OP_VOLUME,positionPrice=OP_AVG)
     etf50 = Option(positionVolume=ETF50_VOLUME,positionPrice=ETF50_AVG)
-    #time.sleep(3)
+    time.sleep(3)
     while(True):
         d = get_data(url)	
         data_loading(d)
@@ -95,12 +95,12 @@ if __name__ == '__main__':
             time.sleep(5)
             continue
 
-        if((opt.delta > middle) != z):
-            z = switch_to_buy()
-            print('switch to buy\n')
-        if((opt.delta < middle) != z):
-            z = switch_to_sell()
-            print('switch to sell\n')
+        if(opt.delta > middle):
+            switch_to_buy()
+            print('switch to buy...\n')
+        if(opt.delta < middle):
+            switch_to_sell()
+            print('switch to sell...\n')
 
         if(opt.delta < lower):
             etf_sell()
