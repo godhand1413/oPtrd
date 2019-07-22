@@ -10,7 +10,7 @@ np.set_printoptions(precision=4,suppress=True,formatter={'float': '{: 0.4f}'.for
 url = 'http://hq.sinajs.cn/list=CON_OP_10001902,CON_SO_10001902,sh510050'
 k = PyKeyboard()
 #持仓量，持仓价
-ETF50_VOLUME = 44.17
+ETF50_VOLUME = 44.52
 ETF50_AVG = 2.948
 OP_VOLUME = 47
 OP_AVG = 0.3632
@@ -34,11 +34,14 @@ class Option(object):
                 self.s_volume = s_volume
                 self.delta = delta
                 self.positionPrice = positionPrice
-                self.positionVolume = positionVolume                
+                self.positionVolume = positionVolume
+        @property               
         def bid_ask(self):
                 return self.sell - self.buy
+        @property
         def total_cost(self):
         		return self.positionVolume*self.positionPrice
+        @property
         def profit(self):
                 return (self.buy - self.positionPrice)*self.positionVolume*10000
 
@@ -63,25 +66,16 @@ def log(s):
 def etf_buy():
     k.tap_key('b')
     time.sleep(0.5)
-    etf50.positionPrice=(etf50.total_cost()+etf50.sell*UNIT)/(etf50.positionVolume+UNIT)
+    etf50.positionPrice=(etf50.total_cost+etf50.sell*UNIT)/(etf50.positionVolume+UNIT)
     etf50.positionVolume+=UNIT
     log('b,'+str(etf50.sell)+'\n')
 
 def etf_sell():   
     k.tap_key('s')
     time.sleep(0.5)
-    etf50.positionPrice=(etf50.total_cost()-etf50.buy*UNIT)/(etf50.positionVolume-UNIT)
+    etf50.positionPrice=(etf50.total_cost-etf50.buy*UNIT)/(etf50.positionVolume-UNIT)
     etf50.positionVolume-=UNIT
     log('s,'+str(etf50.buy)+'\n')
-
-def switch_to_buy():
-    pyautogui.press('f1')
-    return True
-
-def switch_to_sell():
-    pyautogui.press('f2')
-    return False
-   
 
 if __name__ == '__main__':
     opt = Option(positionVolume=OP_VOLUME,positionPrice=OP_AVG)
@@ -90,23 +84,25 @@ if __name__ == '__main__':
     while(True):
         d = get_data(url)	
         data_loading(d)
-        if(etf50.bid_ask()>0.002):
+        if(etf50.bid_ask>0.002):
             print('bid ask too big!')
             time.sleep(5)
             continue
-
-        if(opt.delta > middle):
-            switch_to_buy()
-            print('switch to buy...\n')
-        if(opt.delta < middle):
-            switch_to_sell()
-            print('switch to sell...\n')
-
+        #switch
+        if((opt.delta > middle) and (z == False)):
+            pyautogui.press('f1')
+            z = True
+            print('switch to buy...')
+        if((opt.delta < middle) and (z == True)):
+            pyautogui.press('f2')
+            z = False
+            print('switch to sell...')
+        #buy or sell
         if(opt.delta < lower):
-            etf_sell()
-            lower -= delta_unit
+            etf_sell()       
             middle = lower
             upper = middle
+            lower -= delta_unit
             print('sell '+str(etf50.buy)+'\n')          
         if(opt.delta > upper):
             etf_buy()
@@ -115,8 +111,8 @@ if __name__ == '__main__':
             upper += delta_unit
             print('buy '+str(etf50.sell)+'\n')
         #浮盈
-        x = etf50.profit()
-        y = opt.profit()
+        x = etf50.profit
+        y = opt.profit
         print('\n{:<9s}{:<9s}{:<9s}{:<9s}{:<9s}\n'\
               '{:<9.4f}{:<9.4f}{:<9.4f}{:<9.4f}{:<9.4f}\n'\
               '{:<9s}{:<9s}{:<9s}\n'\
